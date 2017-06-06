@@ -1,15 +1,12 @@
 def flatten_array(array, init = [])
-  array.each do |a|
-    if a.class.is_a? Array
-      flatten_array(a, init)
-    else
-      init << a
-    end
+  array.each do |elem|
+    elem.is_a?(Array) ? flatten_array(elem, init) : init << elem
   end
+
   init
 end
 
-require "minitest/autorun"
+require 'minitest/autorun'
 
 class Tests < MiniTest::Unit::TestCase
   def test_example_1
