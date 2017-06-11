@@ -1,3 +1,4 @@
+# frozen_string_literal: true
 # Find the missing element in a given permutation.
 def perm_missing_element(a)
   n = a.size

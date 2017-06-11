@@ -1,3 +1,4 @@
+# frozen_string_literal: true
 def flatten_array(array, init = [])
   array.each do |elem|
     elem.is_a?(Array) ? flatten_array(elem, init) : init << elem
