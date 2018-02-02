@@ -1,51 +1,41 @@
 require 'rack'
 
-class ParamsParser
-  def initialize(app)
-    @app = app
-  end
-
-  def call(env)
-    request = Rack::Request.new env
-    env['params'] = request.params
-    app.call env
-  end
-end
-
 class HelloWorldApp
   def self.call(env)
-    [200, {}, env['params'].inspect]
+    # 200 is the HTTP status code
+    # the second element is the response HTTP header hash
+    # finally the last element is the response body
+    ['200', {'Content-Type' => 'text/html'}, ['A hello world rack app.']]
   end
 end
 
-class First
+class AddSomeHeaders
   def initialize(app)
     @app = app
   end
 
   def call(env)
-    puts :first
-    @app.call(env).tap { |_| puts :first_2 }
+    @app.call(env).tap { |status, headers, body| headers['X-awesome'] = true }
   end
 end
 
-class Second
+class EditSomeHeaders
   def initialize(app)
     @app = app
   end
 
   def call(env)
-    puts :second
-
-    status, headers, body = @app.call(env).tap { |_| puts :second_2 }
-    [status, headers, body]
+    @app.call(env).tap do |status, headers, body|
+      headers.delete('X-awesome')
+      headers['X-double-awesome'] = 'true'
+    end
   end
 end
 
 app = Rack::Builder.new do
-  use First
-  use Second
+  use EditSomeHeaders
+  use AddSomeHeaders
   run HelloWorldApp
 end
 
-Rack::Server.start :app => app
+Rack::Handler::WEBrick.run app
