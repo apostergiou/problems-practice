@@ -1,15 +1,7 @@
-def my_hash(s, max)
-  h = 0
-  (0...s.length).each do |i|
-    h += s[i].ord
-  end
-  h % max
-end
-
 class HashTable
-  LIMIT = 4
-
   attr_accessor :storage
+
+  LIMIT = 4
 
   def initialize
     @storage = []
@@ -23,18 +15,16 @@ class HashTable
     index = my_hash(k, LIMIT)
     if @storage[index].nil?
       @storage[index] = [[k, v]]
+      return
     else
-      inserted = false
       (0...@storage[index].length).each do |i|
         if @storage[index][i][0] == k
           @storage[index][i][1] = v
-          inserted = true
+          return
         end
       end
-      if inserted == false
-        @storage[index].push([k, v])
-      end
     end
+    @storage[index].push([k, v])
   end
 
   def remove(k)
@@ -53,20 +43,30 @@ class HashTable
   def lookup(k)
     index = my_hash(k, LIMIT)
     return nil if (@storage[index] == nil)
-    (0..@storage.length).each do |i|
+    (0...@storage[index].length).each do |i|
       if @storage[index][i][0] == k
         return @storage[index][i][1]
       end
     end
+    nil
+  end
+
+  private
+
+  def my_hash(s, max)
+    h = 0
+    (0...s.length).each do |i|
+      h += s[i].ord
+    end
+    h % max
   end
 end
-
-puts my_hash('quincy', 10)
 
 ht = HashTable.new
 ht.add('beau', 'person')
 ht.add('fido', 'dog')
 ht.add('rex', 'dinosaur')
 ht.add('tux', 'penguin')
-puts ht.lookup('tux')
+puts "searching for 'tux' -->" + ' ' + ht.lookup('tux').to_s
+puts "searching for 'mux' -->" + ' ' + ht.lookup('mux').to_s
 ht.print
