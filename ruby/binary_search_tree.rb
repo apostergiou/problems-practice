@@ -1,101 +1,121 @@
-class BinarySearchTree
-  attr_reader :value, :left_child, :right_child
+class Node
+  attr_accessor :key, :left, :right
 
-  def initialize(value)
-    @value = value
-    @left_child = nil
-    @right_child = nil
-  end
-
-  def insert_node(value)
-    if value <= @value && @left_child
-      @left_child.insert_node(value)
-    elsif value <= @value
-      @left_child = BinarySearchTree.new(value)
-    elsif value > @value && @right_child
-      @right_child.insert_node(value)
-    else
-      @right_child = BinarySearchTree.new(value)
-    end
-  end
-
-  def find_node(value)
-    if value < @value && @left_child
-      return @left_child.find_node(value)
-    end
-    if value > @value && @right_child
-      return @right_child.find_node(value)
-    end
-
-    value == @value
-  end
-
-  def remove_node(value, parent)
-    if value < @value and @left_child
-        return @left_child.remove_node(value, self)
-    elsif value < @value
-        return false
-    elsif value > @value and @right_child
-        return @right_child.remove_node(value, self)
-    elsif value > @value
-        return false
-    else
-      if @left_child.nil? && @right_child.nil? && self == parent.left_child
-        parent.left_child = nil
-        @clear_node
-      elsif @left_child.nil? && @right_child.nil? && self == parent.right_child
-        parent.right_child = nil
-        @clear_node
-      elsif @left_child && @right_child.nil? && self == parent.left_child
-        parent.left_child = @left_child
-        @clear_node
-      elsif @left_child && @right_child.nil? && self == parent.right_child
-        parent.right_child = @left_child
-        @clear_node
-      elsif @right_child && @left_child.nil? && self == parent.left_child
-        parent.left_child = @right_child
-        @clear_node
-      elsif @right_child && @left_child.nil? && self == parent.right_child
-        parent.right_child = @right_child
-        @clear_node
-      else
-        @value = @right_child.find_minimum_value
-        @right_child.remove_node(@value, self)
-      end
-      return true
-    end
-  end
-
-  def clear_node
-    @value = nil
-    @left_child = nil
-    @right_child = nil
-  end
-
-  def find_minimum_value
-    @left_child ? @left_child.find_minimum_value : @value
+  def initialize(key)
+    @key = key
+    @left = nil
+    @right = nil
   end
 end
 
-#        |15|
-#      /      \
-#    |11|     |30|
-#   /    \    /   \
-# |6|   |12| |29| |35|
-#           \
-#          |15|
-bst = BinarySearchTree.new(15)
-bst.insert_node(11)
-bst.insert_node(6)
-bst.insert_node(12)
-bst.insert_node(30)
-bst.insert_node(15)
-bst.insert_node(35)
-bst.insert_node(29)
 
-puts("##########")
-puts("Find node:")
-puts("##########")
-puts "15: " + bst.find_node(15).to_s # True
-puts "10: " + bst.find_node(10).to_s # False
-puts "29: " + bst.find_node(29).to_s # True
+def inorder(root)
+  return if root.nil?
+  inorder(root.left)
+  puts root.key
+  inorder(root.right)
+end
+
+
+def insert(node, key)
+  return Node.new(key) if node.nil?
+
+  if key < node.key
+    node.left = insert(node.left, key)
+  else
+    node.right = insert(node.right, key)
+  end
+
+  return node
+end
+
+# Given a non-empty binary search tree, return the node
+# with min key value found in that tree. Note that the
+# entire tree does not need to be searched
+def min_value_node(node)
+  current = node
+
+  # loop down to find the leftmost leaf
+  while(!current.left.nil?)
+    current = current.left
+  end
+
+  return current
+end
+
+# Given a binary search tree and a key, this function
+# delete the key and returns the new root
+def delete_node(root, key)
+  return root if root.nil?
+
+  # If the key to be deleted is smaller than the root's
+  # key then it lies in  left subtree
+  if key < root.key
+    root.left = delete_node(root.left, key)
+
+    # If the key to be delete is greater than the root's key
+    # then it lies in right subtree
+  elsif(key > root.key)
+    root.right = delete_node(root.right, key)
+
+    # If key is same as root's key, then this is the node
+    # to be deleted
+  else
+    # Node with only one child or no child
+    if root.left.nil?
+      temp = root.right
+      root = nil
+      return temp
+    elsif root.right.nil?
+      temp = root.left
+      root = nil
+      return temp
+    end
+
+    # Node with two children: Get the inorder successor
+    # (smallest in the right subtree)
+    temp = min_value_node(root.right)
+
+    # Copy the inorder successor's content to this node
+    root.key = temp.key
+
+    # Delete the inorder successor
+    root.right = delete_node(root.right , temp.key)
+  end
+
+  return root
+end
+
+# Driver program to test above functions
+#            50
+#         /     \
+#        30      70
+#       /  \    /  \
+#     20   40  60   80
+
+root = nil
+root = insert(root, 50)
+root = insert(root, 30)
+root = insert(root, 20)
+root = insert(root, 40)
+root = insert(root, 70)
+root = insert(root, 60)
+root = insert(root, 80)
+
+puts "Inorder traversal of the given tree"
+inorder(root)
+
+puts "\nDelete 20"
+root = delete_node(root, 20)
+puts "Inorder traversal of the modified tree"
+inorder(root)
+
+puts "\nDelete 30"
+root = delete_node(root, 30)
+puts "Inorder traversal of the modified tree"
+inorder(root)
+
+puts "\nDelete 50"
+root = delete_node(root, 50)
+puts "Inorder traversal of the modified tree"
+inorder(root)
